@@ -5,10 +5,15 @@ const morgan = require('morgan');
 const colors = require('colors');
 const fileupload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const cors = require('cors');
 const errorHandler = require('./middleware/error');
 const connectDB = require('./config/db');
 // const logger = require('./middleware/logger');
-
 
 //load env vars
 dotenv.config({ path: './config/config.env' });
@@ -16,14 +21,12 @@ dotenv.config({ path: './config/config.env' });
 //connnect to database 
 connectDB();
 
-
 //route files
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
 const reviews = require('./routes/reviews');
-
 
 const app = express();
 
@@ -42,6 +45,29 @@ if (process.env.NODE_ENV === 'development') {
 //file uploading
 app.use(fileupload());
 
+// sanitize data
+app.use(mongoSanitize());
+
+// set security headers
+app.use(helmet());
+
+// prevent XSS attacks
+app.use(xss());
+
+// rate limmiting
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 100 // 100 request per 10 minutes
+});
+
+app.use(limiter);
+
+// prevent http params pollution
+app.use(hpp());
+
+// Enable CORS
+app.use(cors());
+
 // set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -59,13 +85,13 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold));
 
- app.get('/', (req,res) => {
-     res.writeHead(200, {
+app.get('/', (req,res) => {
+    res.writeHead(200, {
         'Content-Type' : 'text/plain'
-     });
-     res.write('NodeJs API Working....');
-     res.end();
- });
+    });
+    res.write('NodeJs API Working....');
+    res.end();
+});
 
 // handle unhandled promise rejections like db login failed
 process.on('unhandledRejection', (err, Promise) => {

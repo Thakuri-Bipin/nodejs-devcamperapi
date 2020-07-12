@@ -103,6 +103,7 @@ const BootcampSchema = new mongoose.Schema({
         required: true
     }
 }, {
+    // populate bootcamp with its courses 
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });

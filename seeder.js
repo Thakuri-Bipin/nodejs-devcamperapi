@@ -4,7 +4,7 @@ const colors = require('colors');
 const dotenv = require('dotenv');
 
 // load env vars
-dotenv.config({path: './config/config.env'});
+dotenv.config({ path: './config/config.env' });
 
 //load models
 const Bootcamp = require('./models/Bootcamp');
@@ -14,7 +14,13 @@ const Review = require('./models/Review');
 
 
 // connect to DB
-mongoose.connect(process.env.MONGO_URI, {
+// mongoose.connect(process.env.MONGO_URI, {
+//     useNewUrlParser: true,
+//     useCreateIndex: true,
+//     useFindAndModify: false,
+//     useUnifiedTopology: true
+// });
+mongoose.connect('mongodb://localhost:27017/devcamperapi', {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
@@ -58,8 +64,8 @@ const deleteData = async () => {
 }
 
 // in console -> node seeder -i will run this 
-if (process.argv[2] === '-i'){
+if (process.argv[2] === '-i') {
     importData();
-}else if(process.argv[2] === '-d'){
+} else if (process.argv[2] === '-d') {
     deleteData();
 }
